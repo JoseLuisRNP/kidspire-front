@@ -202,7 +202,7 @@ generateNewSum();
             </div>
             <div class="relative flex justify-center space-x-2">
                 <div class="absolute -left-6 w-12 text-center">
-                    {{ operation.value === 'addition' ? '+' : '-' }}
+                    {{ operation === 'addition' ? '+' : '-' }}
                 </div>
                 <div
                     v-for="(digit, index) in num2
