@@ -1,5 +1,8 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
+import JSConfetti from 'js-confetti'
+
+const jsConfetti = new JSConfetti()
 
 const title = ref('Maths Component');
 const message = ref(
@@ -71,15 +74,17 @@ const correctAnswer = computed(() => {
     return result.padStart(userAnswer.value.length, '0');
 });
 
-const checkAnswer = () => {
+const checkAnswer = async () => {
     if (userAnswer.value.join('') === correctAnswer.value) {
         feedback.value = 'Correct!';
         showUnicorns.value = true;
-        setTimeout(() => {
-            generateNewSum();
-        }, 2000); // Espera 2 segundos antes de generar una nueva suma
+        await jsConfetti.addConfetti({
+            emojis: ['🌈', '⚡️', '💥', '✨', '💫', '🌸'],
+        })
+        generateNewSum();
     } else {
         feedback.value = `Incorrect. The correct answer was ${correctAnswer.value}.`;
+
     }
 };
 
@@ -163,6 +168,12 @@ const updateCarries = () => {
 watch([withCarry, operation, numDigits], generateNewSum);
 
 generateNewSum();
+
+function clearUserAnswer() {
+  userAnswer.value.forEach((_, index) => {
+    userAnswer.value[index] = '';
+  });
+}
 </script>
 
 <template>
@@ -171,7 +182,7 @@ generateNewSum();
         <p class="mb-4 text-lg text-purple-500">{{ message }}</p>
         <p class="mb-2 text-xl text-green-500">Solve the following problem:</p>
         <div
-            class="sum-container mb-4 rounded-lg bg-white p-4 text-center text-4xl leading-loose shadow-lg"
+            class="relative sum-container mb-4 rounded-lg bg-white p-4 text-center text-4xl leading-loose shadow-lg"
         >
             <div class="flex justify-center space-x-2">
                 <div
@@ -197,13 +208,14 @@ generateNewSum();
                     :key="'num1-' + index"
                     class="w-12 text-center"
                 >
-                    <span>{{ digit }}</span>
+                <span v-show="digit !== '0' || digit === '0' && index !== 0 ">{{ digit }}</span>
                 </div>
             </div>
-            <div class="relative flex justify-center space-x-2">
-                <div class="absolute -left-6 w-12 text-center">
+            <div class="absolute -left-2 w-12 text-center">
                     {{ operation === 'addition' ? '+' : '-' }}
                 </div>
+            <div class="relative flex justify-center space-x-2">
+                
                 <div
                     v-for="(digit, index) in num2
                         .toString()
@@ -211,8 +223,8 @@ generateNewSum();
                     :key="'num2-' + index"
                     class="w-12 text-center"
                 >
-                    {{ digit }}
-                </div>
+                <span v-show="digit !== '0' || digit === '0' && index !== 0 ">{{ digit }}</span>
+            </div>
             </div>
             <hr class="my-2 border-t-2 border-black" />
         </div>
@@ -227,7 +239,10 @@ generateNewSum();
                 {{ digit }}
             </div>
         </div>
-        <div class="numbers-container mb-4 flex justify-center">
+        <div class="flex justify-center mt-4">
+            <button @click="clearUserAnswer" class="bg-red-500 text-white px-4 py-2 rounded">Clear</button>
+        </div>
+        <div class="numbers-container mb-4 flex flex-wrap justify-center">
             <div
                 v-for="n in 10"
                 :key="n"
