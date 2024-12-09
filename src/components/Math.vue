@@ -21,6 +21,11 @@ const numDigits = ref(2); // Nueva opción para seleccionar el número de dígit
 const tabs = ['sumar', 'restar'];
 const selectedTab = ref('sumar');
 
+const results = ref({
+    correct: 0,
+    total: 0,
+})
+
 
 function generateNoCarryNumbers(length) {
     let num1 = '';
@@ -225,16 +230,19 @@ const correctAnswer = computed(() => {
 });
 
 const checkAnswer = async () => {
+    results.value.total++;
     if (userAnswer.value.join('') === correctAnswer.value) {
         feedback.value = 'Correct!';
+        results.value.correct++;
+
         await jsConfetti.addConfetti({
             emojis: ['🌈', '⚡️', '💥', '✨', '💫', '🌸'],
         })
         generateNewSum();
     } else {
         feedback.value = `Incorrect. Try again!.`;
-
     }
+
 };
 
 const handleDrop = (event, index) => {
@@ -342,9 +350,12 @@ function selectTab(tab) {
 
 <template>
     <div class="flex min-h-screen flex-col items-center bg-blue-100 p-4">
-        <h1 class="mb-4 text-3xl font-bold text-pink-500">Mi ficha de repaso</h1>
-        <p class="mb-4 text-lg text-purple-500">Matemáticas 🗒️</p>
-        <p class="mb-2 text-xl text-green-500">Selecciona que quieres practicar</p>
+        <h1 class="mb-4 text-3xl font-bold text-pink-500">Mi ficha de repaso 🗒️</h1>
+        <div class="flex justify-between mb-4 text-lg text-purple-500 ">
+            <p class="mr-8">Matemáticas 🧮</p>
+            <p>Aciertos:{{ results.correct }} / {{ results.total }}</p>
+        </div>
+        <p class="mb-2 text-lg text-green-500">Selecciona que quieres practicar</p>
         <div class="flex justify-center mb-4">
       <button
         v-for="tab in tabs"
