@@ -2,12 +2,10 @@
 import { computed, ref, watch } from 'vue';
 import JSConfetti from 'js-confetti'
 
+
+const emits = defineEmits(['results']);
 const jsConfetti = new JSConfetti()
 
-const title = ref('Maths Component');
-const message = ref(
-    'Welcome to the Maths component using Vue 3 Composition API!',
-);
 const num1 = ref(0);
 const num2 = ref(0);
 const userAnswer = ref([]);
@@ -17,9 +15,6 @@ const operation = ref('addition'); // Nueva opción para seleccionar la operaci�
 const showUnicorns = ref(false);
 const carries = ref([]); // Para almacenar los números llevados
 const numDigits = ref(2); // Nueva opción para seleccionar el número de dígitos
-
-const tabs = ['sumar', 'restar'];
-const selectedTab = ref('sumar');
 
 const results = ref({
     correct: 0,
@@ -180,11 +175,7 @@ function generateRandomNoBorrowNumbers(length) {
 }
 
 const generateNewSum = () => {
-    const maxNumber = Math.pow(10, numDigits.value) - 1;
-    const minNumber = Math.pow(10, numDigits.value - 1);
-
-    if (operation.value === 'addition') {
-        if (withCarry.value) {
+    if (withCarry.value) {
             const { num1: newNum1, num2: newNum2 } = generateRandomCarriesNumbers(numDigits.value);
             num1.value = newNum1;
             num2.value = newNum2;
@@ -193,26 +184,11 @@ const generateNewSum = () => {
             num1.value = newNum1;
             num2.value = newNum2;
         }
-    } else if (operation.value === 'subtraction') {
-        if (withCarry.value) {
-            const { num1: newNum1, num2: newNum2 } = generateRandomBorrowNumbers(numDigits.value);
-            num1.value = newNum1;
-            num2.value = newNum2;
-        } else {
-            const { num1: newNum1, num2: newNum2 } = generateRandomNoBorrowNumbers(numDigits.value);
-            num1.value = newNum1;
-            num2.value = newNum2;
-        }
-    }
     const maxLength = Math.max(
         num1.value.toString().length,
         num2.value.toString().length,
     );
-    const resultLength = (
-        operation.value === 'addition'
-            ? num1.value + num2.value
-            : num1.value - num2.value
-    ).toString().length;
+    const resultLength = (num1.value + num2.value).toString().length;
     userAnswer.value = Array(Math.max(resultLength, maxLength)).fill('');
     carries.value = Array(resultLength).fill('');
     feedback.value = '';
@@ -220,18 +196,12 @@ const generateNewSum = () => {
 };
 
 const correctAnswer = computed(() => {
-    let result;
-    if (operation.value === 'addition') {
-        result = (num1.value + num2.value).toString();
-    } else if (operation.value === 'subtraction') {
-        result = (num1.value - num2.value).toString();
-    }
-    return result.padStart(userAnswer.value.length, '0');
+    return (num1.value + num2.value).toString().padStart(userAnswer.value.length, '0');
 });
 
 const checkAnswer = async () => {
-    results.value.total++;
     if (userAnswer.value.join('') === correctAnswer.value) {
+        emits('results', true);
         feedback.value = 'Correct!';
         results.value.correct++;
 
@@ -241,8 +211,9 @@ const checkAnswer = async () => {
         generateNewSum();
     } else {
         feedback.value = `Incorrect. Try again!.`;
-    }
+        emits('results', false);
 
+    }
 };
 
 const handleDrop = (event, index) => {
@@ -270,8 +241,7 @@ const handleClick = (digit) => {
 
 const updateCarries = () => {
     carries.value = Array(userAnswer.value.length).fill('');
-    if (operation.value === 'addition') {
-        let carry = 0;
+    let carry = 0;
         for (let i = userAnswer.value.length - 1; i >= 0; i--) {
             const sum =
                 parseInt(
@@ -296,29 +266,6 @@ const updateCarries = () => {
                 carry = 0;
             }
         }
-    } else if (operation.value === 'subtraction') {
-        let borrow = 0;
-        for (let i = userAnswer.value.length - 1; i >= 0; i--) {
-            let diff =
-                parseInt(
-                    num1.value
-                        .toString()
-                        .padStart(userAnswer.value.length, '0')[i],
-                ) -
-                borrow -
-                parseInt(
-                    num2.value
-                        .toString()
-                        .padStart(userAnswer.value.length, '0')[i],
-                );
-            if (diff < 0) {
-                borrow = 1;
-                carries.value[i] = borrow.toString();
-            } else {
-                borrow = 0;
-            }
-        }
-    }
 };
 
 // Observa el cambio en withCarry, operation y numDigits y genera una nueva suma
@@ -330,21 +277,6 @@ function clearUserAnswer() {
   userAnswer.value.forEach((_, index) => {
     userAnswer.value[index] = '';
   });
-}
-
-function selectTab(tab) {
-  selectedTab.value = tab;
-  switch (tab) {
-    case 'sumar':
-      operation.value = 'addition';
-      break;
-    case 'restar':
-      operation.value = 'subtraction';
-      break;
-    case 'multiplicar':
-      operation.value = 'multiplication';
-      break;
-  }
 }
 </script>
 
@@ -363,13 +295,13 @@ function selectTab(tab) {
     <Transition name="slide-fade" v-if="operation !== 'addition'">        
         <div
             class="transition-transform transform translate-y-[3.6rem] -translate-x-[3.5rem]" 
-          v-show="userAnswer[index + (operation === 'addition' ? 1 : 0)] !== ''"
+          v-show="userAnswer[index + 1] !== ''"
         >
           {{ carry }}
       </div>
       </Transition>
       <div v-else
-          v-show="userAnswer[index + (operation === 'addition' ? 1 : 0)] !== ''"
+          v-show="userAnswer[index + 1] !== ''"
         >
           {{ carry }}
       </div>
@@ -389,7 +321,7 @@ function selectTab(tab) {
                 </div>
             </div>
             <div class="absolute -left-2 w-12 text-center">
-                    {{ operation === 'addition' ? '+' : '-' }}
+                    +
                 </div>
             <div class="relative flex justify-center space-x-2">
                 

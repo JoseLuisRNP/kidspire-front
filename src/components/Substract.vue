@@ -2,103 +2,19 @@
 import { computed, ref, watch } from 'vue';
 import JSConfetti from 'js-confetti'
 
+
+const emits = defineEmits(['results']);
 const jsConfetti = new JSConfetti()
 
-const title = ref('Maths Component');
-const message = ref(
-    'Welcome to the Maths component using Vue 3 Composition API!',
-);
 const num1 = ref(0);
 const num2 = ref(0);
 const userAnswer = ref([]);
 const feedback = ref('');
 const withCarry = ref(true); // Nueva opción para seleccionar sumas con llevadas
-const operation = ref('addition'); // Nueva opción para seleccionar la operación (addition, subtraction)
 const showUnicorns = ref(false);
 const carries = ref([]); // Para almacenar los números llevados
 const numDigits = ref(2); // Nueva opción para seleccionar el número de dígitos
 
-const tabs = ['sumar', 'restar'];
-const selectedTab = ref('sumar');
-
-const results = ref({
-    correct: 0,
-    total: 0,
-})
-
-
-function generateNoCarryNumbers(length) {
-    let num1 = '';
-    let num2 = '';
-
-    for (let i = 0; i < length; i++) {
-        // Generar dígitos para que la suma de ellos no supere 9
-        const digit1 = Math.floor(Math.random() * 10); // Random digit (0-9)
-        const digit2 = Math.floor(Math.random() * (10 - digit1)); // Asegurar que no hay llevada
-        num1 += digit1;
-        num2 += digit2;
-    }
-
-    if (num1 === 0 || num2 === 0) {
-        return generateNoCarryNumbers(length);
-    }
-
-    return {
-        num1: parseInt(num1, 10),
-        num2: parseInt(num2, 10),
-        sum: parseInt(num1, 10) + parseInt(num2, 10)
-    };
-}
-
-function generateRandomCarriesNumbers(length) {
-    let num1 = Array(length).fill(0);
-    let num2 = Array(length).fill(0);
-    let hasCarry = false; // Para rastrear si ya se generó una llevada
-
-    for (let i = 0; i < length; i++) {
-        const isLastDigit = (i === length - 1);
-
-        if (!hasCarry && isLastDigit) {
-            // Forzar llevada en la última posición si no se generó ninguna
-            const digit1 = Math.floor(Math.random() * 9) + 1; // 1-9
-            const digit2 = Math.floor(Math.random() * (10 - digit1)) + 10 - digit1; // Asegura suma >= 10
-            num1[i] = digit1;
-            num2[i] = Math.min(9, digit2);
-            hasCarry = true;
-        } else {
-            const shouldCarry = Math.random() < 0.5 ; // Decide aleatoriamente si debe haber llevada
-
-            if (shouldCarry) {
-                // Generar una llevada
-                const digit1 = Math.floor(Math.random() * 9) + 1; // 1-9
-                const digit2 = Math.floor(Math.random() * (10 - digit1)) + 10 - digit1; // Asegura suma >= 10
-                num1[i] = digit1;
-                num2[i] = Math.min(9, digit2); // Asegura que digit2 está en el rango 0-9
-                hasCarry = true;
-            } else {
-                // Generar sin llevada
-                const digit1 = Math.floor(Math.random() * 10); // 0-9
-                const digit2 = Math.floor(Math.random() * (10 - digit1)); // Asegura suma < 10
-                num1[i] = digit1;
-                num2[i] = digit2;
-            }
-        }
-    }
-
-    // Convertir los arrays en números
-    const number1 = parseInt(num1.join(''), 10);
-    const number2 = parseInt(num2.join(''), 10);
-
-    if (num1 === 0 || num2 === 0) {
-        return generateRandomCarriesNumbers(length);
-    }
-
-    return {
-        num1: number1,
-        num2: number2,
-        sum: number1 + number2,
-    };
-}
 
 
 function generateRandomBorrowNumbers(length) {
@@ -179,21 +95,7 @@ function generateRandomNoBorrowNumbers(length) {
     };
 }
 
-const generateNewSum = () => {
-    const maxNumber = Math.pow(10, numDigits.value) - 1;
-    const minNumber = Math.pow(10, numDigits.value - 1);
-
-    if (operation.value === 'addition') {
-        if (withCarry.value) {
-            const { num1: newNum1, num2: newNum2 } = generateRandomCarriesNumbers(numDigits.value);
-            num1.value = newNum1;
-            num2.value = newNum2;
-        } else {
-            const { num1: newNum1, num2: newNum2 } = generateNoCarryNumbers(numDigits.value);
-            num1.value = newNum1;
-            num2.value = newNum2;
-        }
-    } else if (operation.value === 'subtraction') {
+const generateNewOperation = () => {
         if (withCarry.value) {
             const { num1: newNum1, num2: newNum2 } = generateRandomBorrowNumbers(numDigits.value);
             num1.value = newNum1;
@@ -203,16 +105,11 @@ const generateNewSum = () => {
             num1.value = newNum1;
             num2.value = newNum2;
         }
-    }
     const maxLength = Math.max(
         num1.value.toString().length,
         num2.value.toString().length,
     );
-    const resultLength = (
-        operation.value === 'addition'
-            ? num1.value + num2.value
-            : num1.value - num2.value
-    ).toString().length;
+    const resultLength = (num1.value - num2.value).toString().length;
     userAnswer.value = Array(Math.max(resultLength, maxLength)).fill('');
     carries.value = Array(resultLength).fill('');
     feedback.value = '';
@@ -220,30 +117,27 @@ const generateNewSum = () => {
 };
 
 const correctAnswer = computed(() => {
-    let result;
-    if (operation.value === 'addition') {
-        result = (num1.value + num2.value).toString();
-    } else if (operation.value === 'subtraction') {
-        result = (num1.value - num2.value).toString();
-    }
-    return result.padStart(userAnswer.value.length, '0');
+    return (num1.value - num2.value).toString().padStart(userAnswer.value.length, '0');
 });
 
+
 const checkAnswer = async () => {
-    results.value.total++;
     if (userAnswer.value.join('') === correctAnswer.value) {
+        emits('results', true);
         feedback.value = 'Correct!';
         results.value.correct++;
 
         await jsConfetti.addConfetti({
             emojis: ['🌈', '⚡️', '💥', '✨', '💫', '🌸'],
         })
-        generateNewSum();
+        generateNewOperation();
     } else {
         feedback.value = `Incorrect. Try again!.`;
-    }
+        emits('results', false);
 
+    }
 };
+
 
 const handleDrop = (event, index) => {
     event.preventDefault();
@@ -270,7 +164,6 @@ const handleClick = (digit) => {
 
 const updateCarries = () => {
     carries.value = Array(userAnswer.value.length).fill('');
-    if (operation.value === 'addition') {
         let carry = 0;
         for (let i = userAnswer.value.length - 1; i >= 0; i--) {
             const sum =
@@ -296,7 +189,6 @@ const updateCarries = () => {
                 carry = 0;
             }
         }
-    } else if (operation.value === 'subtraction') {
         let borrow = 0;
         for (let i = userAnswer.value.length - 1; i >= 0; i--) {
             let diff =
@@ -318,33 +210,17 @@ const updateCarries = () => {
                 borrow = 0;
             }
         }
-    }
 };
 
 // Observa el cambio en withCarry, operation y numDigits y genera una nueva suma
-watch([withCarry, operation, numDigits], generateNewSum);
+watch([withCarry, numDigits], generateNewOperation);
 
-generateNewSum();
+generateNewOperation();
 
 function clearUserAnswer() {
   userAnswer.value.forEach((_, index) => {
     userAnswer.value[index] = '';
   });
-}
-
-function selectTab(tab) {
-  selectedTab.value = tab;
-  switch (tab) {
-    case 'sumar':
-      operation.value = 'addition';
-      break;
-    case 'restar':
-      operation.value = 'subtraction';
-      break;
-    case 'multiplicar':
-      operation.value = 'multiplication';
-      break;
-  }
 }
 </script>
 
@@ -360,19 +236,14 @@ function selectTab(tab) {
       :key="'carry-' + index"
       class="w-12 text-center text-sm text-gray-500"
     >
-    <Transition name="slide-fade" v-if="operation !== 'addition'">        
+    <Transition name="slide-fade">        
         <div
             class="transition-transform transform translate-y-[3.6rem] -translate-x-[3.5rem]" 
-          v-show="userAnswer[index + (operation === 'addition' ? 1 : 0)] !== ''"
+          v-show="userAnswer[index] !== ''"
         >
           {{ carry }}
       </div>
       </Transition>
-      <div v-else
-          v-show="userAnswer[index + (operation === 'addition' ? 1 : 0)] !== ''"
-        >
-          {{ carry }}
-      </div>
     </div>
   </div>
   </div>
@@ -389,7 +260,7 @@ function selectTab(tab) {
                 </div>
             </div>
             <div class="absolute -left-2 w-12 text-center">
-                    {{ operation === 'addition' ? '+' : '-' }}
+                    -
                 </div>
             <div class="relative flex justify-center space-x-2">
                 
