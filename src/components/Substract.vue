@@ -126,7 +126,6 @@ const checkAnswer = async () => {
     if (userAnswer.value.join('') === correctAnswer.value) {
         emits('results', true);
         feedback.value = '¡Correcto!';
-        results.value.correct++;
 
         await jsConfetti.addConfetti({
             emojis: ['🌈', '⚡️', '💥', '✨', '💫', '🌸'],
