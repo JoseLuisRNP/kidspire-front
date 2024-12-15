@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import JSConfetti from 'js-confetti'
+import Actions from './Actions.vue';
 
 
 const emits = defineEmits(['results']);
@@ -202,7 +203,7 @@ const correctAnswer = computed(() => {
 const checkAnswer = async () => {
     if (userAnswer.value.join('') === correctAnswer.value) {
         emits('results', true);
-        feedback.value = 'Correct!';
+        feedback.value = '¡Correcto!';
         results.value.correct++;
 
         await jsConfetti.addConfetti({
@@ -210,7 +211,7 @@ const checkAnswer = async () => {
         })
         generateNewSum();
     } else {
-        feedback.value = `Incorrect. Try again!.`;
+        feedback.value = 'Incorrecto. ¡Inténtalo otra vez!';
         emits('results', false);
 
     }
@@ -281,7 +282,7 @@ function clearUserAnswer() {
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col items-center bg-blue-100 p-4">
+    <div class="flex flex-col items-center bg-blue-100 p-4">
         <div
             class="relative sum-container mb-4 rounded-lg bg-white p-4 text-center text-4xl leading-loose shadow-lg"
         >
@@ -349,42 +350,7 @@ function clearUserAnswer() {
             </div>
         </div>
         
-        <div class="numbers-container mb-4 flex flex-wrap justify-center">
-            <div
-                v-for="n in 10"
-                :key="n"
-                class="number m-2 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-yellow-400 text-2xl text-white"
-                draggable="true"
-                @dragstart="handleDrag"
-                @click="() => handleClick(n - 1)"
-            >
-                {{ n - 1 }}
-            </div>
-        </div>
-        <div class="flex justify-center mb-4">
-            <button
-            @click="checkAnswer"
-            class="rounded-full bg-yellow-400 px-6 py-2 text-xl text-white mx-2"
-        >
-            Resolver
-        </button>
-        <button
-            @click="clearUserAnswer"
-            class="rounded-full bg-red-400 px-6 py-2 text-xl text-white mx-2"
-        >
-            Borrar
-        </button>
-        </div>
-        
-        <p
-            class="mt-4 text-2xl"
-            :class="{
-                'text-green-500': feedback === 'Correct!',
-                'text-red-500': feedback !== 'Correct!',
-            }"
-        >
-            {{ feedback }}
-        </p>
+        <Actions :feedback="feedback" @checkAnswer="checkAnswer" @clearAnswer="clearUserAnswer" @clickNumber="handleClick"/>
         <div class="mt-4">
             <label class="text-lg text-purple-500">
                 <input type="checkbox" v-model="withCarry" class="mr-2" />

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import JSConfetti from 'js-confetti';
+import Actions from './Actions.vue';
 
 
 const emits = defineEmits(['results']);
@@ -69,6 +70,13 @@ function clearUserAnswer() {
 // Initialize with first table selected
 selectedTables.value[0] = true;
 generateNewMultiplication();
+
+const handleNumberClick = (n) => {
+          const firstEmpty = userAnswer.value.findIndex(x => x === '');
+          if (firstEmpty !== -1) userAnswer.value[firstEmpty] = (n).toString();
+        }
+
+
 </script>
 
 <template>
@@ -121,45 +129,11 @@ generateNewMultiplication();
       </div>
     </div>
 
-    <div class="mt-6 grid grid-cols-5 gap-4">
-      <div
-        v-for="n in 10"
-        :key="n-1"
-        class="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-2xl text-white font-bold cursor-pointer hover:bg-yellow-500"
-        draggable="true"
-        @dragstart="(event) => event.dataTransfer.setData('text', (n-1).toString())"
-        @click="() => {
-          const firstEmpty = userAnswer.findIndex(x => x === '');
-          if (firstEmpty !== -1) userAnswer[firstEmpty] = (n-1).toString();
-        }"
-      >
-        {{ n-1 }}
-      </div>
-    </div>
-
-    <div class="mt-6 flex space-x-4">
-      <button
-        @click="checkAnswer"
-        class="bg-green-500 text-white px-6 py-2 rounded-full text-xl hover:bg-green-600"
-      >
-        Comprobar
-      </button>
-      <button
-        @click="clearUserAnswer"
-        class="bg-red-500 text-white px-6 py-2 rounded-full text-xl hover:bg-red-600"
-      >
-        Borrar
-      </button>
-    </div>
-
-    <div
-      v-if="feedback"
-      :class="[
-        'mt-4 px-6 py-2 rounded-full text-white text-xl',
-        feedback.includes('Correcto') ? 'bg-green-500' : 'bg-red-500'
-      ]"
-    >
-      {{ feedback }}
-    </div>
+    <Actions 
+      :feedback="feedback"
+      @clickNumber="handleNumberClick"
+      @checkAnswer="checkAnswer"
+      @clearAnswer="clearUserAnswer"
+    />
   </div>
 </template>

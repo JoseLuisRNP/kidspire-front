@@ -1,6 +1,8 @@
 <script setup>
 import {ref} from 'vue'
 import { RouterLink, useRouter } from 'vue-router';
+import { Analytics } from '@vercel/analytics/vue';
+
 const tabs = ['sumar', 'restar', 'multiplicar'];
 
 const results = ref({
@@ -17,9 +19,16 @@ const handleResult = (result) => {
         results.value.correct++;
     }
 }
+
+const childView = ref(null);
+
+const checkAnswer = () => {
+    childView.value.checkAnswer();
+}
 </script>
 
 <template>
+    <Analytics />
   <div class="flex min-h-screen flex-col items-center bg-blue-100 p-4">
       <h1 class="mb-4 text-3xl font-bold text-pink-500">Mi ficha de repaso 🗒️</h1>
       <div class="flex justify-between mb-4 text-lg text-purple-500 ">
@@ -41,9 +50,7 @@ const handleResult = (result) => {
       ]">{{ tab }}</div>
     </RouterLink>
   </div>
-  <RouterView @results="handleResult"/>
-
-  
+  <RouterView ref="childView" @results="handleResult"/>
 
   </div>
     
