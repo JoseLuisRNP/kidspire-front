@@ -239,7 +239,7 @@ function clearUserAnswer() {
     <Transition name="slide-fade">        
         <div
             class="transition-transform transform translate-y-[3.6rem] -translate-x-[3.5rem]" 
-          v-show="userAnswer[index] !== ''"
+          v-show="withCarry && userAnswer[index] !== ''"
         >
           {{ carry }}
       </div>
@@ -256,7 +256,7 @@ function clearUserAnswer() {
                     :key="'num1-' + index"
                     class="w-12 text-center"
                 >
-                <span v-show="digit !== '0' || digit === '0' && index !== 0 ">{{ digit }}</span>
+                <span v-show="d(digit !== '0' || digit === '0' && index !== 0) || num1.toString().length == 1 ">{{ digit }}</span>
                 </div>
             </div>
             <div class="absolute -left-2 w-12 text-center">
@@ -271,7 +271,7 @@ function clearUserAnswer() {
                     :key="'num2-' + index"
                     class="w-12 text-center"
                 >
-                <span v-show="digit !== '0' || digit === '0' && index !== 0 ">{{ digit }}</span>
+                <span v-show="(digit !== '0' || digit === '0' && index !== 0) || num2.toString().length == 1 ">{{ digit }}</span>
             </div>
             </div>
             <hr class="my-2 border-t-2 border-black" />
