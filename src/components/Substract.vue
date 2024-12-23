@@ -256,7 +256,7 @@ function clearUserAnswer() {
                     :key="'num1-' + index"
                     class="w-12 text-center"
                 >
-                <span v-show="d(digit !== '0' || digit === '0' && index !== 0) || num1.toString().length == 1 ">{{ digit }}</span>
+                <span v-show="(digit !== '0' || digit === '0' && index !== 0) || num1.toString().length == 1 ">{{ digit }}</span>
                 </div>
             </div>
             <div class="absolute -left-2 w-12 text-center">
