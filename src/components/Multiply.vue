@@ -15,6 +15,8 @@ const results = ref({
   correct: 0,
   total: 0,
 });
+const isMultipleChoice = ref(false);
+const multipleChoiceOptions = ref([]);
 
 // Get array of selected table numbers
 const activeTables = computed(() => 
@@ -33,8 +35,22 @@ function generateNewMultiplication() {
   const randomIndex = Math.floor(Math.random() * activeTables.value.length);
   num1.value = activeTables.value[randomIndex];
   num2.value = Math.floor(Math.random() * 10) + 1;
-  const result = (num1.value * num2.value).toString();
-  userAnswer.value = Array(result.length).fill('');
+  const result = num1.value * num2.value;
+  
+  if (isMultipleChoice.value) {
+    // Generate 3 wrong answers
+    const wrongAnswers = new Set();
+    while (wrongAnswers.size < 3) {
+      const wrong = result + Math.floor(Math.random() * 10) - 5;
+      if (wrong !== result && wrong > 0) {
+        wrongAnswers.add(wrong);
+      }
+    }
+    multipleChoiceOptions.value = [...wrongAnswers, result]
+      .sort(() => Math.random() - 0.5);
+  } else {
+    userAnswer.value = Array(result.toString().length).fill('');
+  }
   feedback.value = '';
 }
 
@@ -47,9 +63,13 @@ const correctAnswer = computed(() => {
   return (num1.value * num2.value).toString();
 });
 
-const checkAnswer = async () => {
+const checkAnswer = async (selectedAnswer = null) => {
   results.value.total++;
-  if (userAnswer.value.join('') === correctAnswer.value) {
+  const answer = selectedAnswer !== null ? 
+    selectedAnswer : 
+    parseInt(userAnswer.value.join(''));
+  
+  if (answer === (num1.value * num2.value)) {
     emits('results', true);
     feedback.value = '¡Correcto!';
     results.value.correct++;
@@ -103,6 +123,15 @@ const handleNumberClick = (n) => {
       <p>Aciertos: {{ results.correct }} / {{ results.total }}</p>
     </div>
 
+    <div class="mb-4">
+      <button 
+        @click="isMultipleChoice = !isMultipleChoice; generateNewMultiplication()"
+        class="bg-purple-500 text-white px-4 py-2 rounded"
+      >
+        {{ isMultipleChoice ? 'Modo: Opciones' : 'Modo: Manual' }}
+      </button>
+    </div>
+
     <div class="bg-white rounded-lg p-6 shadow-lg">
       <div class="flex justify-end mb-4">
         <div class="text-2xl font-bold">
@@ -116,7 +145,19 @@ const handleNumberClick = (n) => {
         </div>
       </div>
       <hr class="border-t-2 border-black mb-4" />
-      <div class="flex space-x-2 mb-4">
+      
+      <div v-if="isMultipleChoice" class="grid grid-cols-2 gap-4">
+        <button
+          v-for="option in multipleChoiceOptions"
+          :key="option"
+          @click="checkAnswer(option)"
+          class="bg-purple-100 hover:bg-purple-200 p-4 rounded-lg text-2xl font-bold"
+        >
+          {{ option }}
+        </button>
+      </div>
+
+      <div v-else class="flex space-x-2 mb-4">
         <div
           v-for="(digit, index) in userAnswer"
           :key="index"
