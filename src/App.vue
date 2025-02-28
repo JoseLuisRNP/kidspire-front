@@ -25,6 +25,11 @@ const childView = ref(null);
 const checkAnswer = () => {
     childView.value.checkAnswer();
 }
+
+const resetResults = () => {
+    results.value.correct = 0;
+    results.value.total = 0;
+}
 </script>
 
 <template>
@@ -50,7 +55,7 @@ const checkAnswer = () => {
       ]">{{ tab }}</div>
     </RouterLink>
   </div>
-  <RouterView ref="childView" @results="handleResult"/>
+  <RouterView ref="childView" @results="handleResult" @reset="resetResults"/>
 
   </div>
     

@@ -4,7 +4,7 @@ import JSConfetti from 'js-confetti';
 import Actions from './Actions.vue';
 
 
-const emits = defineEmits(['results']);
+const emits = defineEmits(['results', 'reset']);
 const jsConfetti = new JSConfetti();
 const selectedTables = ref(Array(10).fill(false)); // Array of 10 booleans
 const num1 = ref(0);
@@ -54,7 +54,14 @@ function generateNewMultiplication() {
   feedback.value = '';
 }
 
+const reset = () => {
+  results.value.correct = 0;
+  results.value.total = 0;
+  emits('reset');
+};
+
 function toggleTable(index) {
+  reset();
   selectedTables.value[index] = !selectedTables.value[index];
   generateNewMultiplication();
 }
