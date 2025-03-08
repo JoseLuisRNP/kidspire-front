@@ -130,14 +130,15 @@ const handleNumberClick = (n) => {
       <p>Aciertos: {{ results.correct }} / {{ results.total }}</p>
     </div>
 
-    <div class="mb-4">
+    <!-- <div class="mb-4">
       <button 
         @click="isMultipleChoice = !isMultipleChoice; generateNewMultiplication()"
         class="bg-purple-500 text-white px-4 py-2 rounded"
       >
         {{ isMultipleChoice ? 'Modo: Opciones' : 'Modo: Manual' }}
       </button>
-    </div>
+    </div> -->
+
 
     <div class="bg-white rounded-lg p-6 shadow-lg">
       <div class="flex justify-end mb-4">
